@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+require('dotenv').config({path: __dirname+'/.env'});
+process.title=process.env.TITLE;
+
+const express = require('express');
+const cors = require('cors');
+
+const read_directory = require("./helpers/read_directory.js");
+
+const app = express();
+app.use(cors());
+read_directory(__dirname+'/endpoints').then(res=>{
+	res.forEach(fn=>{
+		const endpoint = require(fn);
+		app[endpoint.method](endpoint.path, endpoint.handler(process.env));
+	});
+	app.listen(process.env.PORT, ()=>console.log(`${process.title} running on port ${process.env.PORT}.`));
+}, err=>{
+	throw err;
+});
